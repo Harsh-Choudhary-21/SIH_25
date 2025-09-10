@@ -60,7 +60,7 @@ class NLPProcessor:
     
     def extract_entities_with_regex(self, text: str) -> Dict[str, Any]:
         """Fallback regex-based entity extraction"""
-        extracted = {
+        extracted: Dict[str, Any] = {
             "claimant_name": None,
             "village": None,
             "area": None,
