@@ -1,0 +1,112 @@
+I am building a Smart India Hackathon project (SIH12508: AI-powered FRA Atlas + WebGIS DSS).
+Frontend = React (from Figma).
+Database = Supabase (Postgres with PostGIS enabled).
+I need you to generate a **FastAPI backend** that connects to my Supabase schema and exposes APIs.
+
+--------------------------------------
+✅ Supabase Schema (already created):
+--------------------------------------
+-- Claims table
+create table if not exists claims (
+    id serial primary key,
+    claimant_name text not null,
+    village text not null,
+    area numeric(10,2) check (area >= 0),
+    status text check (status in ('granted', 'pending', 'rejected')) not null,
+    geom geography(polygon, 4326) not null,
+    created_at timestamptz default now(),
+    updated_at timestamptz default now()
+);
+
+-- Schemes table
+create table if not exists schemes (
+    id serial primary key,
+    scheme_name text not null,
+    description text,
+    eligibility_rules jsonb,
+    created_at timestamptz default now()
+);
+
+-- Recommendations table
+create table if not exists recommendations (
+    id serial primary key,
+    claim_id int not null references claims(id) on delete cascade,
+    scheme_id int not null references schemes(id) on delete cascade,
+    score float check (score >= 0 and score <= 1),
+    created_at timestamptz default now()
+);
+
+--------------------------------------
+✅ API Requirements (FastAPI):
+--------------------------------------
+1. `POST /upload`
+   - Accept PDF/image file.
+   - Use **pytesseract** (OCR) + **spaCy** (NLP) to extract claimant_name, village, area, status.
+   - Insert into Supabase `claims` with a dummy polygon (for now).
+   - Return the inserted claim as JSON.
+
+2. `GET /claims`
+   - Return all claims.
+   - Support filter: `/claims?status=granted|pending|rejected`.
+
+3. `GET /map`
+   - Run this SQL query to return polygons as GeoJSON:
+     select jsonb_build_object(
+         'type', 'FeatureCollection',
+         'features', jsonb_agg(
+             jsonb_build_object(
+                 'type', 'Feature',
+                 'geometry', st_asgeojson(geom)::jsonb,
+                 'properties', jsonb_build_object(
+                     'id', id,
+                     'claimant_name', claimant_name,
+                     'village', village,
+                     'area', area,
+                     'status', status
+                 )
+             )
+         )
+     ) as geojson
+     from claims;
+   - Return the GeoJSON object in API response.
+
+4. `POST /recommend/{claim_id}`
+   - Fetch claim by ID.
+   - Apply simple rule-based DSS using `schemes.eligibility_rules`.
+     Example:
+       - If area > 2 → recommend "Irrigation Support Scheme".
+       - If status = "pending" → recommend "Legal Aid Scheme".
+       - If status = "granted" and area < 3 → recommend "Community Forest Rights Scheme".
+   - Insert recommendation into `recommendations` table with a score (0–1).
+   - Return recommended schemes as JSON.
+
+--------------------------------------
+✅ Technical Setup:
+--------------------------------------
+- Use **supabase-py** (official client) or `asyncpg` for DB connection.
+- Use **Pydantic models** for request/response validation.
+- Enable FastAPI Swagger docs at `/docs`.
+- Organize project files into:
+  - `main.py` (entry point)
+  - `routes/` (API routes)
+  - `models.py` (Pydantic models)
+  - `db.py` (Supabase connection)
+  - `utils/ocr.py` (OCR with Tesseract)
+  - `utils/nlp.py` (NLP with spaCy)
+  - `utils/rules.py` (recommendation engine)
+- Include `.env.example` with:
+  - SUPABASE_URL=
+  - SUPABASE_KEY=
+  - DATABASE_URL=
+
+--------------------------------------
+✅ Deliverables:
+--------------------------------------
+- A working FastAPI backend connected to Supabase.
+- Endpoints: `/upload`, `/claims`, `/map`, `/recommend/{id}`.
+- OCR + NLP prototype working in `/upload`.
+- GeoJSON output from `/map` (ready for Leaflet/Mapbox).
+- Rule-based DSS in `/recommend`.
+- Modular code, production-ready structure.
+
+Generate all code files needed so I can run this backend directly in Replit.
