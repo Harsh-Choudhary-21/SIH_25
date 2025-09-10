@@ -54,61 +54,9 @@ class NLPProcessor:
         self.matcher.add("AREA", area_pattern)
     
     def extract_entities_with_spacy(self, text: str) -> Dict[str, Any]:
-        """Extract entities using spaCy NLP"""
-        if not self.nlp:
-            return self.extract_entities_with_regex(text)
-        
-        doc = self.nlp(text)
-        extracted = {
-            "claimant_name": None,
-            "village": None,
-            "area": None,
-            "status": None
-        }
-        
-        # Find matches using patterns
-        matches = self.matcher(doc)
-        
-        for match_id, start, end in matches:
-            span = doc[start:end]
-            label = self.nlp.vocab.strings[match_id]
-            
-            if label == "NAME" and not extracted["claimant_name"]:
-                # Extract the name part (excluding the label)
-                name_tokens = [token.text for token in span if token.is_alpha and token.lower() not in ["name", "claimant", "applicant"]]
-                if name_tokens:
-                    extracted["claimant_name"] = " ".join(name_tokens[:3])  # Take first 3 words
-            
-            elif label == "VILLAGE" and not extracted["village"]:
-                # Extract village name
-                village_tokens = [token.text for token in span if token.is_alpha and token.lower() not in ["village", "gram", "panchayat"]]
-                if village_tokens:
-                    extracted["village"] = " ".join(village_tokens[:2])  # Take first 2 words
-            
-            elif label == "AREA" and not extracted["area"]:
-                # Extract numerical area
-                for token in span:
-                    if token.like_num:
-                        try:
-                            extracted["area"] = float(token.text)
-                            break
-                        except ValueError:
-                            continue
-        
-        # Extract status using keyword matching
-        status_keywords = {
-            "granted": ["granted", "approved", "sanctioned", "accepted"],
-            "pending": ["pending", "under review", "processing", "submitted"],
-            "rejected": ["rejected", "denied", "declined", "cancelled"]
-        }
-        
-        text_lower = text.lower()
-        for status, keywords in status_keywords.items():
-            if any(keyword in text_lower for keyword in keywords):
-                extracted["status"] = status
-                break
-        
-        return extracted
+        """Extract entities using spaCy NLP - fallback to regex for reliability"""
+        # Use regex-based extraction which is more reliable for document processing
+        return self.extract_entities_with_regex(text)
     
     def extract_entities_with_regex(self, text: str) -> Dict[str, Any]:
         """Fallback regex-based entity extraction"""
