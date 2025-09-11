@@ -63,9 +63,10 @@ if os.getenv("NODE_ENV") == "production":
         # Fallback if no production origins set
         allowed_origins = ["https://your-frontend.netlify.app", "https://your-frontend.vercel.app"]
 else:
-    # Development: Use development origins
-    dev_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173,https://localhost:3000,https://localhost:5173")
-    allowed_origins = [origin.strip() for origin in dev_origins.split(",") if origin.strip()]
+    # Development: Allow all origins for demo flexibility
+    # For production, set NODE_ENV=production and PRODUCTION_ORIGINS
+    allowed_origins = ["*"]  # Allow all origins in development
+    logger.info(f"Development mode: CORS allowing all origins")
 
 app.add_middleware(
     CORSMiddleware,
@@ -150,7 +151,7 @@ async def internal_error_handler(request, exc):
 
 if __name__ == "__main__":
     # Run the application
-    port = int(os.getenv("PORT", 5000))
+    port = int(os.getenv("PORT", 8000))
     host = os.getenv("HOST", "0.0.0.0")
 
     logger.info(f"Starting server on {host}:{port}")

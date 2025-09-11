@@ -1,4 +1,4 @@
-modules = ["python-3.11"]
+modules = ["python-3.11", "nodejs-20"]
 [agent]
 expertMode = true
 
@@ -16,20 +16,48 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "FastAPI Server"
+args = "Frontend"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Backend API"
 
 [[workflows.workflow]]
-name = "FastAPI Server"
+name = "Frontend"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py"
+args = "cd frontend && npm run dev"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "webview"
 
+[[workflows.workflow]]
+name = "Backend API"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && python main.py"
+waitForPort = 8000
+
+[workflows.workflow.metadata]
+outputType = "console"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 5173
+externalPort = 5173
+
+[[ports]]
+localPort = 42397
+externalPort = 3000
+
+[[ports]]
+localPort = 8000
+externalPort = 8000
