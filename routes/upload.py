@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
-from models import UploadResponse, ErrorResponse
+from models import UploadResponse, ErrorResponse, ClaimResponse
 from utils.ocr import ocr_processor
 from utils.nlp import nlp_processor
 from db import db
@@ -100,7 +100,7 @@ async def upload_file(file: UploadFile = File(...)):
             return UploadResponse(
                 success=True,
                 message="File processed successfully and claim created",
-                claim=created_claim,
+                claim=ClaimResponse(**created_claim),
                 extracted_data={
                     "raw_text": extracted_text[:500] + "..." if len(extracted_text) > 500 else extracted_text,
                     "extracted": extracted_data

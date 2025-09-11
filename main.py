@@ -54,13 +54,26 @@ app = FastAPI(
     redoc_url="/redoc",
     lifespan=lifespan)
 
-# Configure CORS
+# Configure CORS for frontend integration
+if os.getenv("NODE_ENV") == "production":
+    # Production: Use only production origins
+    production_origins = os.getenv("PRODUCTION_ORIGINS", "")
+    allowed_origins = [origin.strip() for origin in production_origins.split(",") if origin.strip()]
+    if not allowed_origins:
+        # Fallback if no production origins set
+        allowed_origins = ["https://your-frontend.netlify.app", "https://your-frontend.vercel.app"]
+else:
+    # Development: Use development origins
+    dev_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173,https://localhost:3000,https://localhost:5173")
+    allowed_origins = [origin.strip() for origin in dev_origins.split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify actual origins
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Accept", "Accept-Language", "Content-Language", "Content-Type", "Authorization"],
+    expose_headers=["Content-Length", "Content-Type", "Date", "Server"]
 )
 
 # Include routers

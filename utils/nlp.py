@@ -1,8 +1,6 @@
 import re
 import logging
-from typing import Dict, Any, Optional, List
-import spacy
-from spacy.matcher import Matcher
+from typing import Dict, Any
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -10,53 +8,7 @@ logger = logging.getLogger(__name__)
 
 class NLPProcessor:
     def __init__(self):
-        try:
-            # Try to load the English model
-            # Note: You may need to run: python -m spacy download en_core_web_sm
-            self.nlp = spacy.load("en_core_web_sm")
-            logger.info("spaCy English model loaded successfully")
-        except OSError:
-            logger.warning("spaCy English model not found. Using fallback regex extraction.")
-            self.nlp = None
-        
-        # Initialize matcher for pattern matching
-        if self.nlp:
-            self.matcher = Matcher(self.nlp.vocab)
-            self._setup_patterns()
-    
-    def _setup_patterns(self):
-        """Setup spaCy patterns for entity extraction"""
-        if not self.nlp:
-            return
-        
-        # Pattern for names (assuming they follow "Name:" or "Claimant:" format)
-        name_pattern = [
-            [{"LOWER": {"IN": ["name", "claimant", "applicant"]}}, 
-             {"IS_PUNCT": True, "OP": "?"}, 
-             {"IS_ALPHA": True, "OP": "+"}]
-        ]
-        
-        # Pattern for villages
-        village_pattern = [
-            [{"LOWER": {"IN": ["village", "gram", "panchayat"]}}, 
-             {"IS_PUNCT": True, "OP": "?"}, 
-             {"IS_ALPHA": True, "OP": "+"}]
-        ]
-        
-        # Pattern for area measurements
-        area_pattern = [
-            [{"LIKE_NUM": True}, 
-             {"LOWER": {"IN": ["hectare", "hectares", "acre", "acres", "ha", "sq", "sqm"]}}]
-        ]
-        
-        self.matcher.add("NAME", name_pattern)
-        self.matcher.add("VILLAGE", village_pattern)
-        self.matcher.add("AREA", area_pattern)
-    
-    def extract_entities_with_spacy(self, text: str) -> Dict[str, Any]:
-        """Extract entities using spaCy NLP - fallback to regex for reliability"""
-        # Use regex-based extraction which is more reliable for document processing
-        return self.extract_entities_with_regex(text)
+        logger.info("NLP processor initialized with regex-based extraction")
     
     def extract_entities_with_regex(self, text: str) -> Dict[str, Any]:
         """Fallback regex-based entity extraction"""
@@ -132,11 +84,8 @@ class NLPProcessor:
             # Clean the text
             cleaned_text = self._clean_text(text)
             
-            # Extract entities
-            if self.nlp:
-                extracted = self.extract_entities_with_spacy(cleaned_text)
-            else:
-                extracted = self.extract_entities_with_regex(cleaned_text)
+            # Extract entities using regex
+            extracted = self.extract_entities_with_regex(cleaned_text)
             
             # Validate and set defaults
             extracted = self._validate_and_set_defaults(extracted)
