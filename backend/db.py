@@ -1,5 +1,6 @@
 import os
 import asyncpg
+import ssl
 from typing import Optional, List, Dict, Any
 from supabase import create_client, Client
 import json
@@ -13,21 +14,62 @@ class Database:
         self.supabase_key = os.getenv("SUPABASE_KEY")
         self.database_url = os.getenv("DATABASE_URL")
         
-        # For demo purposes, allow running without Supabase credentials
-        self.demo_mode = not all([self.supabase_url, self.supabase_key])
+        # Initialize Supabase client if credentials are available; otherwise fall back to demo mode
+        self.supabase = None
+        self.demo_mode = False
+        if self.supabase_url and self.supabase_key:
+            try:
+                self.supabase: Client = create_client(self.supabase_url, self.supabase_key)
+            except Exception as e:
+                print("⚠️  Supabase client initialization failed, falling back to DEMO MODE")
+                print(f"   Reason: {e}")
+                self.demo_mode = True
+        else:
+            self.demo_mode = True
         
         if self.demo_mode:
-            print("⚠️  Running in DEMO MODE: No Supabase credentials found")
+            print("⚠️  Running in DEMO MODE")
             print("   Using mock data for demonstration purposes")
             print("   Set SUPABASE_URL and SUPABASE_KEY for production use")
             self.supabase = None
-            self._demo_claims = []  # Store demo claims in memory
+            self._demo_claims = self._get_demo_claims()  # Store demo claims in memory
             self._demo_schemes = self._get_demo_schemes()
             self._demo_recommendations = []
-        else:
-            self.supabase: Client = create_client(self.supabase_url, self.supabase_key)
         
         self._pool: Optional[asyncpg.Pool] = None
+    
+    def _get_demo_claims(self) -> List[Dict[str, Any]]:
+        """Get demo claims for demo mode"""
+        from datetime import datetime
+        return [
+            {
+                "id": 1,
+                "claimant_name": "Ramesh Kumar",
+                "village": "Bandhavgarh",
+                "area": 2.5,
+                "status": "granted",
+                "created_at": datetime.now(),
+                "updated_at": datetime.now()
+            },
+            {
+                "id": 2,
+                "claimant_name": "Sunita Devi",
+                "village": "Kanha",
+                "area": 1.2,
+                "status": "pending",
+                "created_at": datetime.now(),
+                "updated_at": datetime.now()
+            },
+            {
+                "id": 3,
+                "claimant_name": "Mohan Singh",
+                "village": "Pench",
+                "area": 0.8,
+                "status": "rejected",
+                "created_at": datetime.now(),
+                "updated_at": datetime.now()
+            }
+        ]
     
     def _get_demo_schemes(self) -> List[Dict[str, Any]]:
         """Get demo schemes for demo mode"""
@@ -58,13 +100,23 @@ class Database:
     
     async def init_pool(self):
         """Initialize database connection pool"""
-        if self.database_url:
-            self._pool = await asyncpg.create_pool(self.database_url)
+        if self.database_url and self._pool is None and not self.demo_mode:
+            try:
+                # Supabase Postgres requires SSL; use a default SSL context
+                self._pool = await asyncpg.create_pool(self.database_url, ssl=True, min_size=1, max_size=5)
+            except Exception as e:
+                print(f"⚠️  Database connection failed, switching to DEMO MODE: {str(e)}")
+                self.demo_mode = True
+                self.supabase = None
+                self._demo_claims = []
+                self._demo_schemes = self._get_demo_schemes()
+                self._demo_recommendations = []
     
     async def close_pool(self):
         """Close database connection pool"""
         if self._pool:
             await self._pool.close()
+            self._pool = None
     
     async def get_connection(self):
         """Get database connection from pool"""
@@ -93,9 +145,14 @@ class Database:
             self._demo_claims.append(new_claim)
             return new_claim
         else:
-            # Production mode: use Supabase
+            # Production mode: use Supabase with default geometry
             try:
-                result = self.supabase.table('claims').insert(claim_data).execute()
+                # Add default geometry (small polygon around origin)
+                claim_data_with_geom = {
+                    **claim_data,
+                    "geom": "POLYGON((0 0, 0.001 0, 0.001 0.001, 0 0.001, 0 0))"
+                }
+                result = self.supabase.table('claims').insert(claim_data_with_geom).execute()
                 return result.data[0] if result.data else None
             except Exception as e:
                 raise Exception(f"Failed to create claim: {str(e)}")

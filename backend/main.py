@@ -68,14 +68,21 @@ else:
     allowed_origins = ["*"]  # Allow all origins in development
     logger.info(f"Development mode: CORS allowing all origins")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Accept", "Accept-Language", "Content-Language", "Content-Type", "Authorization"],
-    expose_headers=["Content-Length", "Content-Type", "Date", "Server"]
-)
+# Configure CORS with wildcard handling compatible with credentials
+cors_kwargs = {
+    "allow_credentials": True,
+    "allow_methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "allow_headers": ["Accept", "Accept-Language", "Content-Language", "Content-Type", "Authorization"],
+    "expose_headers": ["Content-Length", "Content-Type", "Date", "Server"],
+}
+if allowed_origins == ["*"] or ("*" in allowed_origins):
+    logger.warning("CORS configured with wildcard origins; using allow_origin_regex for compatibility with credentials")
+    cors_kwargs["allow_origin_regex"] = ".*"
+    cors_kwargs["allow_origins"] = []
+else:
+    cors_kwargs["allow_origins"] = allowed_origins
+
+app.add_middleware(CORSMiddleware, **cors_kwargs)
 
 # Include routers
 app.include_router(upload_router)

@@ -1,14 +1,11 @@
 export interface Claim {
-  id: string;
+  id: number;
   claimant_name: string;
   village: string;
-  district: string;
-  state: string;
-  area_hectares: number;
-  status: 'pending' | 'approved' | 'rejected' | 'under_review';
-  date_submitted: string;
-  documents?: string[];
-  coordinates?: [number, number][];
+  area: number;
+  status: 'pending' | 'granted' | 'rejected';
+  created_at: string;
+  updated_at: string;
 }
 
 export interface GeoJSONFeature {

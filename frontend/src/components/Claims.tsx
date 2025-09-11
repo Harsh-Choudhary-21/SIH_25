@@ -36,9 +36,7 @@ const Claims: React.FC = () => {
     if (searchTerm) {
       filtered = filtered.filter(claim => 
         claim.claimant_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        claim.village.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        claim.district.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        claim.state.toLowerCase().includes(searchTerm.toLowerCase())
+        claim.village.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -52,12 +50,10 @@ const Claims: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved':
+      case 'granted':
         return 'bg-green-100 text-green-800';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
-      case 'under_review':
-        return 'bg-blue-100 text-blue-800';
       case 'rejected':
         return 'bg-red-100 text-red-800';
       default:
@@ -95,7 +91,7 @@ const Claims: React.FC = () => {
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search by claimant name, village, district, or state..."
+                    placeholder="Search by claimant name or village..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
@@ -113,8 +109,7 @@ const Claims: React.FC = () => {
                   >
                     <option value="all">All Status</option>
                     <option value="pending">Pending</option>
-                    <option value="under_review">Under Review</option>
-                    <option value="approved">Approved</option>
+                    <option value="granted">Granted</option>
                     <option value="rejected">Rejected</option>
                   </select>
                 </div>
@@ -187,14 +182,11 @@ const Claims: React.FC = () => {
                               <div className="font-medium max-w-[120px] truncate" title={claim.village}>
                                 {claim.village}
                               </div>
-                              <div className="text-gray-500 max-w-[120px] truncate" title={`${claim.district}, ${claim.state}`}>
-                                {claim.district}, {claim.state}
-                              </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {claim.area_hectares.toFixed(2)}
+                          {claim.area?.toFixed(2) || 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(claim.status)}`}>
@@ -204,7 +196,7 @@ const Claims: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center text-sm text-gray-900">
                             <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                            {formatDate(claim.date_submitted)}
+                            {claim.created_at ? formatDate(claim.created_at) : 'N/A'}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
