@@ -14,7 +14,7 @@ const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
   const replitMatch = hostname.match(/^(\d+)-(.+)$/);
   if (replitMatch) {
-    const [, , replSlug] = replitMatch;
+    const [, frontendPort, replSlug] = replitMatch;
     return `https://8000-${replSlug}`;
   }
   

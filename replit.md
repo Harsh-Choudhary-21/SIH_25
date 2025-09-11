@@ -3,11 +3,14 @@
 The FRA Atlas WebGIS Backend is an AI-powered Forest Rights Act Atlas with WebGIS Decision Support System built for Smart India Hackathon (SIH12508). The system processes forest rights claims through document upload, extracts information using OCR and NLP, stores geospatial data, and provides intelligent scheme recommendations. It serves as the backend API for a React frontend, managing forest rights claims data and providing decision support through rule-based recommendations.
 
 **Status: ✅ COMPLETE & READY FOR DEMO**
-- FastAPI backend fully implemented and running on port 5000
+- FastAPI backend fully implemented and running on port 8000
+- React frontend running on port 5000 with proper integration
+- Full-stack communication working with dynamic API URL resolution  
 - All endpoints functional: /upload, /claims, /map, /recommend/{claim_id}
 - Demo mode enabled for running without Supabase credentials
-- OCR and NLP processing working with pytesseract and spaCy
+- OCR and NLP processing working with pytesseract and optimized NLP
 - Interactive API documentation available at /docs
+- One-command startup script (./start-local.sh) for easy demonstrations
 
 # User Preferences
 
