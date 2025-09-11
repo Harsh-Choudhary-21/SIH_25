@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 import logging
 import os
@@ -89,6 +90,10 @@ app.include_router(upload_router)
 app.include_router(claims_router)
 app.include_router(map_router)
 app.include_router(recommendations_router)
+
+# Serve static files in production
+if os.path.exists("static"):
+    app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 
 @app.get("/")
