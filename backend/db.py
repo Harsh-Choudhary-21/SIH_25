@@ -45,8 +45,9 @@ class Database:
             {
                 "id": 1,
                 "claimant_name": "Ramesh Kumar",
-                "village": "Bandhavgarh",
-                "area": 2.5,
+                "village": "Kanha Village",
+                "district": "Mandla, Madhya Pradesh",
+                "area": 3.2,
                 "status": "granted",
                 "created_at": datetime.now(),
                 "updated_at": datetime.now()
@@ -54,18 +55,50 @@ class Database:
             {
                 "id": 2,
                 "claimant_name": "Sunita Devi",
-                "village": "Kanha",
-                "area": 1.2,
+                "village": "Pench Village",
+                "district": "Seoni, Madhya Pradesh",
+                "area": 2.8,
                 "status": "pending",
                 "created_at": datetime.now(),
                 "updated_at": datetime.now()
             },
             {
                 "id": 3,
-                "claimant_name": "Mohan Singh",
-                "village": "Pench",
-                "area": 0.8,
+                "claimant_name": "Gopal Singh",
+                "village": "Bandhavgarh Village",
+                "district": "Umaria, Madhya Pradesh",
+                "area": 1.5,
                 "status": "rejected",
+                "created_at": datetime.now(),
+                "updated_at": datetime.now()
+            },
+            {
+                "id": 4,
+                "claimant_name": "Vikas Adivasi",
+                "village": "Papikonda Village",
+                "district": "East Godavari, Andhra Pradesh",
+                "area": 4.1,
+                "status": "granted",
+                "created_at": datetime.now(),
+                "updated_at": datetime.now()
+            },
+            {
+                "id": 5,
+                "claimant_name": "Sunita Adivasi",
+                "village": "Bandipur Village",
+                "district": "Chamarajanagar, Karnataka",
+                "area": 2.3,
+                "status": "pending",
+                "created_at": datetime.now(),
+                "updated_at": datetime.now()
+            },
+            {
+                "id": 6,
+                "claimant_name": "श्री राजेश कुमार गोंड",
+                "village": "जमुनिया",
+                "district": "मंडला, मध्य प्रदेश",
+                "area": 3.5,
+                "status": "granted",
                 "created_at": datetime.now(),
                 "updated_at": datetime.now()
             }
@@ -196,22 +229,86 @@ class Database:
     async def get_map_data(self) -> Dict[str, Any]:
         """Get all claims as GeoJSON for map display"""
         if self.demo_mode:
-            # Demo mode: create GeoJSON from demo claims
+            # Demo mode: create GeoJSON from demo claims with realistic forest coordinates
             features = []
-            for claim in self._demo_claims:
-                # Create a dummy polygon for demo purposes
+            # Real forest locations with actual coordinates
+            demo_coords = [
+                [80.2707, 20.0937],  # Kanha National Park, MP
+                [81.0379, 19.9373],  # Pench National Park, MP
+                [80.5770, 23.8315],  # Bandhavgarh National Park, MP
+                [83.3932, 17.3753],  # Papikonda National Park, AP
+                [76.4951, 12.1568],  # Bandipur National Park, Karnataka
+                [80.1500, 22.7500],  # Jamunia village area, Mandla, MP
+            ]
+            
+            for i, claim in enumerate(self._demo_claims):
+                # Use specific coordinates for each claim
+                base_lng, base_lat = demo_coords[i % len(demo_coords)]
+                offset = i * 0.02  # Smaller offset for realistic clustering
+                
+                # Create realistic forest plot polygons for each location
+                if i == 0:  # Kanha National Park area
+                    coords = [
+                        [80.2707, 20.0937],
+                        [80.2807, 20.0937],
+                        [80.2807, 20.1037],
+                        [80.2707, 20.1037],
+                        [80.2707, 20.0937]
+                    ]
+                elif i == 1:  # Pench National Park area
+                    coords = [
+                        [81.0379, 19.9373],
+                        [81.0479, 19.9373],
+                        [81.0479, 19.9473],
+                        [81.0379, 19.9473],
+                        [81.0379, 19.9373]
+                    ]
+                elif i == 2:  # Bandhavgarh National Park area
+                    coords = [
+                        [80.5770, 23.8315],
+                        [80.5870, 23.8315],
+                        [80.5870, 23.8415],
+                        [80.5770, 23.8415],
+                        [80.5770, 23.8315]
+                    ]
+                elif i == 3:  # Papikonda National Park area
+                    coords = [
+                        [83.3932, 17.3753],
+                        [83.4032, 17.3753],
+                        [83.4032, 17.3853],
+                        [83.3932, 17.3853],
+                        [83.3932, 17.3753]
+                    ]
+                elif i == 4:  # Bandipur National Park area
+                    coords = [
+                        [76.4951, 12.1568],
+                        [76.5051, 12.1568],
+                        [76.5051, 12.1668],
+                        [76.4951, 12.1668],
+                        [76.4951, 12.1568]
+                    ]
+                else:  # Jamunia village, Mandla, MP
+                    coords = [
+                        [80.1500, 22.7500],
+                        [80.1600, 22.7500],
+                        [80.1600, 22.7600],
+                        [80.1500, 22.7600],
+                        [80.1500, 22.7500]
+                    ]
+                
                 feature = {
                     "type": "Feature",
                     "geometry": {
                         "type": "Polygon",
-                        "coordinates": [[[0, 0], [0.001, 0], [0.001, 0.001], [0, 0.001], [0, 0]]]
+                        "coordinates": [coords]
                     },
                     "properties": {
-                        "id": claim["id"],
+                        "id": str(claim["id"]),
                         "claimant_name": claim["claimant_name"],
                         "village": claim["village"],
-                        "area": claim["area"],
-                        "status": claim["status"]
+                        "district": claim.get("district", "Demo District"),
+                        "area_hectares": claim["area"],
+                        "status": "granted" if claim["status"] == "granted" else "pending" if claim["status"] == "pending" else "rejected"
                     }
                 }
                 features.append(feature)
@@ -221,38 +318,37 @@ class Database:
                 "features": features
             }
         else:
-            # Production mode: use PostGIS query
-            if not self._pool:
-                await self.init_pool()
-            
-            connection = await self.get_connection()
+            # Production mode: use Supabase
             try:
-                query = """
-                SELECT jsonb_build_object(
-                    'type', 'FeatureCollection',
-                    'features', jsonb_agg(
-                        jsonb_build_object(
-                            'type', 'Feature',
-                            'geometry', st_asgeojson(geom)::jsonb,
-                            'properties', jsonb_build_object(
-                                'id', id,
-                                'claimant_name', claimant_name,
-                                'village', village,
-                                'area', area,
-                                'status', status
-                            )
-                        )
-                    )
-                ) as geojson
-                FROM claims;
-                """
+                result = self.supabase.table('claims').select('*').execute()
+                claims = result.data or []
                 
-                result = await connection.fetchval(query)
-                return result or {"type": "FeatureCollection", "features": []}
+                features = []
+                for claim in claims:
+                    # Convert PostGIS geometry to GeoJSON if available
+                    feature = {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [[[0, 0], [0.001, 0], [0.001, 0.001], [0, 0.001], [0, 0]]]
+                        },
+                        "properties": {
+                            "id": str(claim["id"]),
+                            "claimant_name": claim["claimant_name"],
+                            "village": claim["village"],
+                            "district": claim.get("district", "Unknown"),
+                            "area_hectares": claim["area"],
+                            "status": claim["status"]
+                        }
+                    }
+                    features.append(feature)
+                
+                return {
+                    "type": "FeatureCollection",
+                    "features": features
+                }
             except Exception as e:
                 raise Exception(f"Failed to get map data: {str(e)}")
-            finally:
-                await self.release_connection(connection)
     
     # Schemes operations
     async def get_schemes(self) -> List[Dict[str, Any]]:

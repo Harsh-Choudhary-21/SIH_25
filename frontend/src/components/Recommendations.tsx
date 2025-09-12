@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Search, Lightbulb, IndianRupee, Clock, Target, ChevronDown, ChevronUp } from 'lucide-react';
 import { api } from '../utils/api';
 import type { Claim, Recommendation } from '../types';
@@ -35,7 +36,6 @@ const Recommendations: React.FC = () => {
       setRecommendations(recommendationsData);
     } catch (error) {
       console.error('Error loading recommendations:', error);
-      // Create sample recommendations if API fails
       setRecommendations([
         {
           id: '1',
@@ -59,29 +59,6 @@ const Recommendations: React.FC = () => {
           estimated_cost: 200000,
           timeline: '6-8 months',
           confidence_score: 0.85
-        },
-        {
-          id: '2',
-          claim_id: claimId,
-          scheme_name: 'Tribal Livelihood Enhancement Program',
-          scheme_description: 'Support program for tribal communities to develop alternative livelihood opportunities while preserving traditional practices.',
-          eligibility_criteria: [
-            'Belongs to scheduled tribe community',
-            'Holds forest rights',
-            'Annual income below ₹2,50,000',
-            'Willing to participate in training programs'
-          ],
-          potential_benefits: 'Training, equipment, and market linkages for traditional crafts, minor forest produce collection, and eco-tourism activities.',
-          implementation_steps: [
-            'Skill assessment and training needs analysis',
-            'Enrollment in appropriate training programs',
-            'Equipment and infrastructure support',
-            'Market linkage development',
-            'Ongoing mentorship and support'
-          ],
-          estimated_cost: 150000,
-          timeline: '4-6 months',
-          confidence_score: 0.78
         }
       ]);
     } finally {
@@ -115,19 +92,32 @@ const Recommendations: React.FC = () => {
     setExpandedCard(expandedCard === cardId ? null : cardId);
   };
 
+  const getStaggerDelay = (index: number, baseDelay = 0.4, increment = 0.1) => {
+    return baseDelay + (index * increment);
+  };
+
   return (
-    <div className="min-h-screen">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+      className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
+    >
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">AI Recommendations</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">AI Recommendations</h1>
 
-          {/* Claim Selection */}
-          <div className="bg-white shadow rounded-lg p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Select Claim for Recommendations</h2>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl rounded-lg p-6 mb-6"
+          >
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Select Claim for Recommendations</h2>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Choose Claim
                 </label>
                 <div className="relative">
@@ -135,12 +125,12 @@ const Recommendations: React.FC = () => {
                   <select
                     value={selectedClaimId}
                     onChange={(e) => setSelectedClaimId(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:ring-green-500 focus:border-green-500"
                   >
-                    <option value="">Select a claim...</option>
+                    <option value="" className="dark:bg-gray-700 dark:text-white">Select a claim...</option>
                     {claims.map((claim) => (
-                      <option key={claim.id} value={claim.id}>
-                        {claim.claimant_name} - {claim.village}, {claim.district}
+                      <option key={claim.id} value={claim.id} className="dark:bg-gray-700 dark:text-white">
+                        {claim.claimant_name} - {claim.village}
                       </option>
                     ))}
                   </select>
@@ -148,12 +138,12 @@ const Recommendations: React.FC = () => {
               </div>
 
               {selectedClaim && (
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-medium text-gray-900 mb-2">Selected Claim Details</h3>
-                  <div className="space-y-1 text-sm text-gray-600">
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-2">Selected Claim Details</h3>
+                  <div className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
                     <p><span className="font-medium">Claimant:</span> {selectedClaim.claimant_name}</p>
-                    <p><span className="font-medium">Location:</span> {selectedClaim.village}, {selectedClaim.district}</p>
-                    <p><span className="font-medium">Area:</span> {selectedClaim.area_hectares} hectares</p>
+                    <p><span className="font-medium">Location:</span> {selectedClaim.village}</p>
+                    <p><span className="font-medium">Area:</span> {selectedClaim.area} hectares</p>
                     <p><span className="font-medium">Status:</span> 
                       <span className={`ml-1 px-2 py-1 text-xs rounded-full ${
                         selectedClaim.status === 'approved' ? 'bg-green-100 text-green-800' :
@@ -167,30 +157,44 @@ const Recommendations: React.FC = () => {
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
 
-          {/* Recommendations */}
           {loading ? (
-            <div className="bg-white shadow rounded-lg p-12">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl rounded-lg p-12"
+            >
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Generating AI recommendations...</p>
+                <p className="text-gray-600 dark:text-gray-300">Generating AI recommendations...</p>
               </div>
-            </div>
+            </motion.div>
           ) : recommendations.length === 0 ? (
-            <div className="bg-white shadow rounded-lg p-12">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl rounded-lg p-12"
+            >
               <div className="text-center">
                 <Lightbulb className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg">No recommendations available</p>
-                <p className="text-sm text-gray-400">
+                <p className="text-gray-500 dark:text-gray-400 text-lg">No recommendations available</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">
                   {selectedClaimId ? 'No suitable schemes found for this claim' : 'Please select a claim to view recommendations'}
                 </p>
               </div>
-            </div>
+            </motion.div>
           ) : (
             <div className="space-y-6">
-              {recommendations.map((recommendation) => (
-                <div key={recommendation.id} className="bg-white shadow rounded-lg overflow-hidden">
+              {recommendations.map((recommendation, index) => (
+                <motion.div 
+                  key={recommendation.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: getStaggerDelay(index), duration: 0.6 }}
+                  whileHover={{ scale: 1.01, y: -2 }}
+                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl rounded-lg overflow-hidden"
+                >
                   <div className="p-6">
                     <div 
                       className="flex items-center justify-between cursor-pointer"
@@ -198,7 +202,7 @@ const Recommendations: React.FC = () => {
                     >
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-xl font-semibold text-gray-900">
+                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                             <span className="break-words" title={recommendation.scheme_name}>
                               {recommendation.scheme_name}
                             </span>
@@ -217,11 +221,11 @@ const Recommendations: React.FC = () => {
                           </div>
                         </div>
                         
-                        <p className="text-gray-600 mb-4 break-words" title={recommendation.scheme_description}>
+                        <p className="text-gray-600 dark:text-gray-300 mb-4 break-words" title={recommendation.scheme_description}>
                           {recommendation.scheme_description}
                         </p>
                         
-                        <div className="flex items-center space-x-6 text-sm text-gray-500">
+                        <div className="flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
                           <div className="flex items-center">
                             <IndianRupee className="h-4 w-4 mr-1" />
                             <span>{formatCurrency(recommendation.estimated_cost)}</span>
@@ -235,15 +239,15 @@ const Recommendations: React.FC = () => {
                     </div>
 
                     {expandedCard === recommendation.id && (
-                      <div className="mt-6 pt-6 border-t border-gray-200">
+                      <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                           <div>
-                            <h4 className="font-medium text-gray-900 mb-3">Eligibility Criteria</h4>
+                            <h4 className="font-medium text-gray-900 dark:text-white mb-3">Eligibility Criteria</h4>
                             <ul className="space-y-2">
                               {recommendation.eligibility_criteria.map((criteria, index) => (
                                 <li key={index} className="flex items-start">
                                   <div className="h-2 w-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                                  <span className="text-sm text-gray-600 break-words" title={criteria}>
+                                  <span className="text-sm text-gray-600 dark:text-gray-300 break-words" title={criteria}>
                                     {criteria}
                                   </span>
                                 </li>
@@ -252,14 +256,14 @@ const Recommendations: React.FC = () => {
                           </div>
 
                           <div>
-                            <h4 className="font-medium text-gray-900 mb-3">Implementation Steps</h4>
+                            <h4 className="font-medium text-gray-900 dark:text-white mb-3">Implementation Steps</h4>
                             <ol className="space-y-2">
                               {recommendation.implementation_steps.map((step, index) => (
                                 <li key={index} className="flex items-start">
                                   <div className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full mr-3 flex-shrink-0 mt-0.5">
                                     {index + 1}
                                   </div>
-                                  <span className="text-sm text-gray-600 break-words" title={step}>
+                                  <span className="text-sm text-gray-600 dark:text-gray-300 break-words" title={step}>
                                     {step}
                                   </span>
                                 </li>
@@ -268,22 +272,22 @@ const Recommendations: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="mt-6 pt-4 border-t border-gray-100">
-                          <h4 className="font-medium text-gray-900 mb-2">Potential Benefits</h4>
-                          <p className="text-sm text-gray-600 break-words" title={recommendation.potential_benefits}>
+                        <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-600">
+                          <h4 className="font-medium text-gray-900 dark:text-white mb-2">Potential Benefits</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 break-words" title={recommendation.potential_benefits}>
                             {recommendation.potential_benefits}
                           </p>
                         </div>
                       </div>
                     )}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -86,7 +86,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadSuccess, onUploadError 
             ? 'border-green-400 bg-green-50'
             : uploadStatus === 'error'
             ? 'border-red-400 bg-red-50'
-            : 'border-gray-300 hover:border-green-400 hover:bg-green-50'
+            : 'border-gray-300 dark:border-gray-600 hover:border-green-400 hover:bg-green-50 dark:hover:bg-gray-700'
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -104,30 +104,30 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadSuccess, onUploadError 
         {isUploading ? (
           <div className="flex flex-col items-center">
             <Loader2 className="h-12 w-12 text-green-600 animate-spin mb-4" />
-            <p className="text-lg font-medium text-gray-700">Uploading...</p>
+            <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Uploading...</p>
           </div>
         ) : uploadStatus === 'success' ? (
           <div className="flex flex-col items-center">
             <CheckCircle className="h-12 w-12 text-green-600 mb-4" />
             <p className="text-lg font-medium text-green-700 mb-2">Upload Successful!</p>
-            <p className="text-sm text-gray-600">{uploadMessage}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{uploadMessage}</p>
           </div>
         ) : uploadStatus === 'error' ? (
           <div className="flex flex-col items-center">
             <XCircle className="h-12 w-12 text-red-600 mb-4" />
             <p className="text-lg font-medium text-red-700 mb-2">Upload Failed</p>
-            <p className="text-sm text-gray-600">{uploadMessage}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{uploadMessage}</p>
           </div>
         ) : (
           <div className="flex flex-col items-center">
             <Upload className="h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-lg font-medium text-gray-700 mb-2">
+            <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
               Drag & drop your files here
             </p>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               or click to browse files
             </p>
-            <div className="flex items-center space-x-2 text-xs text-gray-500">
+            <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
               <File className="h-4 w-4" />
               <span>Supports: PDF, JPG, PNG (max 10MB)</span>
             </div>
