@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/__pycache__/
+
+# Environment files
+.env
+backend/.env
+
+# Build outputs
+frontend/dist/
+frontend/build/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test files
+backend/test_db.py
+
+# Docker
+.dockerignore
+uploads/
